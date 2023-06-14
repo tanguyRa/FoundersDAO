@@ -1,0 +1,22 @@
+version: '3'
+
+networks:
+  net:
+
+
+services:
+
+  contracts:
+    build: ./smart-contracts
+    image: ${PROJECT_NAME}/contracts
+    container_name: ${PROJECT_NAME}.contracts
+    env_file:
+      - ./smart-contracts/.env
+    volumes:
+      - ./smart-contracts/hardhat.config.js:/app/src/hardhat.config.js
+      - ./smart-contracts/package.json:/app/src/package.json
+      - ./smart-contracts/contracts:/app/src/contracts
+      - ./smart-contracts/data/cache:/app/src/cache
+      - ./smart-contracts/data/artifacts:/app/src/artifacts
+    networks:
+      - net

@@ -1,0 +1,76 @@
+{
+  "$fndrToken": {
+    "id": "$fndrToken",
+    "name": "FoundersDAOToken",
+    "symbol": "FNDR",
+    "type": "ERC20",
+    "total_supply": 2000000000,
+    "mintable": false,
+    # true => add mint
+    # false => premint total supply (total_supply must be >0)
+    "mint_repartition": "$repartition_mint",
+    "transfer_fee_repartition": null,
+
+    "price": 0, # default
+    "purchase_repartition": null, # only if price > 0
+  },
+
+  "$repartition_mint": { # 10^4 or 6 %
+    type: "repartition_list",
+    repartition_map: {
+      "dao_reserve": 20,
+      "dynamic_ico": 50,
+      "community_pool": 10,
+      "team": 20,
+    }
+  },
+
+  deployer: { # user defined or by default?
+    type: "wallet",
+    address: "...",
+    name: deployer
+  },
+  dao_reserve: {
+    type: "unlockable-reserve",
+    name: My DAO reserve wallet,
+    token: "$fndrToken",
+    cliff: 365, # in days
+    vesting_percentage: 100, # %
+    vesting_period: 0, # in days
+  },
+  dynamic_ico: {
+    type: "smart-contract",
+    address: "...",
+    name: My dynamic ICO
+  },
+  community_pool_ambassador: {
+    type: "unlockable-reserve",
+    name: "Community pool",
+    token: "$fndrToken",
+    cliff: 30, # in days
+    vesting_percentage: 2, # %
+    vesting_period: 30, # in days
+  },
+  community_pool_contributors: {
+    type: "unlockable-reserve",
+    name: "Community pool",
+    token: "$fndrToken",
+    cliff: 30, # in days
+    vesting_percentage: 2, # %
+    vesting_period: 30, # in days
+  },
+  community_pool_referrals: {
+    type: "unlockable-reserve",
+    name: "Community pool",
+    token: "$fndrToken",
+    cliff: 30, # in days
+    vesting_percentage: 50, # %
+    vesting_period: 30, # in days
+  },
+  team: {
+    type: "wallet",
+    address: "...",
+    name: "My developer team"
+  }
+
+}
