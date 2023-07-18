@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./FloatingMaths.sol";
 
-import "hardhat/console.sol";
-
 // start-snippet: token import
 import "./FNDRToken.sol";
 
@@ -31,7 +29,7 @@ contract DynamicICO is Ownable {
         address _buyingToken,
         address _firstContributors,
         address _daoWallet_addr
-    ) public {
+    ) public onlyOwner {
         require(!initialized, "DynamicICO: contract is already initialized");
 
         token = FNDRToken(_token);
@@ -40,6 +38,10 @@ contract DynamicICO is Ownable {
         buyingToken = IERC20Metadata(_buyingToken);
         tokenDecimals = token.decimals();
         buyingTokenDecimals = buyingToken.decimals();
+        require(
+            _daoWallet_addr != address(0),
+            "DynamicICO: daoWallet_addr is the zero address"
+        );
         daoWallet_addr = _daoWallet_addr;
 
         initialized = true;
@@ -97,10 +99,16 @@ contract DynamicICO is Ownable {
             tokenDecimals
         );
 
-        buyingToken.transferFrom(recipient, daoWallet_addr, buyingTokenAmount);
+        require(
+            buyingToken.transferFrom(
+                msg.sender,
+                daoWallet_addr,
+                buyingTokenAmount
+            ),
+            "DynamicICO: transferFrom failed"
+        );
         token.transfer(recipient, amount);
 
-        // emit Purchase(recipient, amountSold, x0, x1);
         emit Purchase(recipient, amount, averageTokenPrice, buyingTokenAmount);
     }
 
@@ -210,7 +218,14 @@ contract DynamicICO is Ownable {
             tokenDecimals
         );
 
-        buyingToken.transferFrom(recipient, daoWallet_addr, buyingTokenAmount);
+        require(
+            buyingToken.transferFrom(
+                msg.sender,
+                daoWallet_addr,
+                buyingTokenAmount
+            ),
+            "DynamicICO: transferFrom failed"
+        );
         token.transfer(recipient, amount);
 
         emit Purchase(recipient, amount, averageTokenPrice, buyingTokenAmount);

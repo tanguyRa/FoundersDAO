@@ -41,10 +41,30 @@ contract FNDRToken is ERC20, ERC20Capped, Ownable {
         // end-snippet: mintable = false
 
         // start-snippet: repartition addresses [constructor init]
+        require(
+            _dao_reserve != address(0),
+            "FiatToken: dao_reserve_addr is the zero address"
+        );
         dao_reserve_addr = _dao_reserve;
+        require(
+            _dynamic_ico != address(0),
+            "FiatToken: dynamic_ico_addr is the zero address"
+        );
         dynamic_ico_addr = _dynamic_ico;
+        require(
+            _community_pool_ambassadors != address(0),
+            "FiatToken: community_pool_ambassadors_addr is the zero address"
+        );
         community_pool_ambassadors_addr = _community_pool_ambassadors;
+        require(
+            _community_pool_contributors != address(0),
+            "FiatToken: community_pool_contributors_addr is the zero address"
+        );
         community_pool_contributors_addr = _community_pool_contributors;
+        require(
+            _team != address(0),
+            "FiatToken: team_addr is the zero address"
+        );
         team_addr = _team;
         // end-snippet: repartition addresses [constructor init]
 

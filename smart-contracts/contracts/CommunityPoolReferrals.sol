@@ -24,9 +24,9 @@ contract CommunityPoolReferrals is Ownable {
     // end-snippet: token definition
 
     uint public cliff;
-    uint public vesting_period;
-    uint public vesting_percentage;
-    uint public deployDate;
+    uint public immutable vesting_period;
+    uint public immutable vesting_percentage;
+    uint public immutable deployDate;
 
     uint8 public tokenDecimals;
 
@@ -58,7 +58,7 @@ contract CommunityPoolReferrals is Ownable {
         address _communityPoolContributors_addr,
         address _daoWallet_addr,
         address _liquidityWallet_addr
-    ) public {
+    ) public onlyOwner {
         require(!initialized, "DynamicICO: contract is already initialized");
 
         token = FNDRToken(_token);
@@ -68,11 +68,29 @@ contract CommunityPoolReferrals is Ownable {
 
         subscriptionPrice = FMaths.mul(50000, 1, 0, 0, tokenDecimals);
         // redistribution addresses
+        require(
+            _communityPoolAmbassadors_addr != address(0),
+            "CommunityPoolReferrals: communityPoolAmbassadors_addr is the zero address"
+        );
         communityPoolAmbassadors_addr = _communityPoolAmbassadors_addr;
+        require(
+            _communityPoolContributors_addr != address(0),
+            "CommunityPoolReferrals: communityPoolContributors_addr is the zero address"
+        );
         communityPoolContributors_addr = _communityPoolContributors_addr;
+        require(
+            _daoWallet_addr != address(0),
+            "CommunityPoolReferrals: daoWallet_addr is the zero address"
+        );
         daoWallet_addr = _daoWallet_addr;
+        require(
+            _liquidityWallet_addr != address(0),
+            "CommunityPoolReferrals: liquidityWallet_addr is the zero address"
+        );
         liquidityWallet_addr = _liquidityWallet_addr;
     }
+
+    event Distribute(address indexed to, uint256 amount, uint256 nextCliff);
 
     /*
      * @dev Distributes the vesting percentage of the token it contains to owner.
@@ -90,8 +108,6 @@ contract CommunityPoolReferrals is Ownable {
                 )
             )
         );
-        uint availableAmount = (token.balanceOf(address(this)) *
-            vesting_percentage) / 100;
 
         for (
             uint contributorId = 0;
@@ -101,11 +117,18 @@ contract CommunityPoolReferrals is Ownable {
             if (patrons[contributorId] > 0) {
                 token.transfer(
                     contributorWallets[contributorId],
-                    (patrons[contributorId] * availableAmount) / totalPatrons
+                    ((patrons[contributorId] *
+                        (token.balanceOf(address(this)) * vesting_percentage)) /
+                        100) / totalPatrons
                 );
             }
         }
         cliff += vesting_period;
+        emit Distribute(
+            owner(),
+            (token.balanceOf(address(this)) * vesting_percentage) / 100,
+            cliff
+        );
     }
 
     // start-snippet: custom code
@@ -142,6 +165,10 @@ contract CommunityPoolReferrals is Ownable {
         if (payer == address(0)) {
             _transferTokens(contributor);
         } else {
+            require(
+                payer == msg.sender,
+                "CommunityPoolReferrals: payer must be msg.sender"
+            );
             _transferTokens(payer);
         }
 

@@ -19,9 +19,9 @@ contract DAOReserve is Ownable {
     // end-snippet: token definition
 
     uint public cliff;
-    uint public vesting_period;
-    uint public vesting_percentage;
-    uint public deployDate;
+    uint immutable vesting_period;
+    uint immutable vesting_percentage;
+    uint immutable deployDate;
 
     constructor(address _token) {
         // start-snippet: init definitions
@@ -32,6 +32,8 @@ contract DAOReserve is Ownable {
         // end-snippet: init definitions
         deployDate = block.timestamp;
     }
+
+    event Distribute(address indexed to, uint256 amount, uint256 nextCliff);
 
     /*
      * @dev Distributes the vesting percentage of the token it contains to owner.
@@ -53,5 +55,6 @@ contract DAOReserve is Ownable {
             vesting_percentage) / 100;
         token.transfer(owner(), availableAmount);
         cliff += vesting_period;
+        emit Distribute(owner(), availableAmount, cliff);
     }
 }
