@@ -108,6 +108,8 @@ contract CommunityPoolReferrals is Ownable {
                 )
             )
         );
+        uint availableAmount = token.balanceOf(address(this)) *
+            vesting_percentage;
 
         for (
             uint contributorId = 0;
@@ -117,18 +119,13 @@ contract CommunityPoolReferrals is Ownable {
             if (patrons[contributorId] > 0) {
                 token.transfer(
                     contributorWallets[contributorId],
-                    ((patrons[contributorId] *
-                        (token.balanceOf(address(this)) * vesting_percentage)) /
-                        100) / totalPatrons
+                    (patrons[contributorId] * availableAmount) /
+                        (100 * totalPatrons)
                 );
             }
         }
         cliff += vesting_period;
-        emit Distribute(
-            owner(),
-            (token.balanceOf(address(this)) * vesting_percentage) / 100,
-            cliff
-        );
+        emit Distribute(owner(), availableAmount / 100, cliff);
     }
 
     // start-snippet: custom code
@@ -166,8 +163,8 @@ contract CommunityPoolReferrals is Ownable {
             _transferTokens(contributor);
         } else {
             require(
-                payer == msg.sender,
-                "CommunityPoolReferrals: payer must be msg.sender"
+                payer == msg.sender || payer == owner(),
+                "CommunityPoolReferrals: payer must be msg.sender or Founders DAO (owner)"
             );
             _transferTokens(payer);
         }

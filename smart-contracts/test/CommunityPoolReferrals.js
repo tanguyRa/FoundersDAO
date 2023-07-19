@@ -180,7 +180,9 @@ describe("CP Referrals contract", function () {
             await ethers.provider.send('evm_increaseTime', [31 * 24 * 60 * 60]);
             await ethers.provider.send('evm_mine');
 
-            await cp_referrals.distribute()
+            await expect(await cp_referrals.distribute())
+                .to.emit(cp_referrals, "Distribute")
+                .withArgs(owner.address, '125000' + e18, '123')
             expect(await token.balanceOf(owner.address)).to.equal(9997546875 + e17)
             expect(await token.balanceOf(user1.address)).to.equal(15625 + e17)
         });
@@ -200,11 +202,11 @@ describe("CP Referrals contract", function () {
             await ethers.provider.send('evm_mine');
             expect(await cp_referrals.isSubscribed(user2.address)).to.equal(true);
             // time travel
-            await ethers.provider.send('evm_increaseTime', [1 * 24 * 60 * 60]);
+            await ethers.provider.send('evm_increaseTime', [1 * 23 * 60 * 60]);
             await ethers.provider.send('evm_mine');
             expect(await cp_referrals.isSubscribed(user2.address)).to.equal(true);
             // time travel
-            await ethers.provider.send('evm_increaseTime', [1 * 24 * 60 * 60]);
+            await ethers.provider.send('evm_increaseTime', [2 * 60 * 60]);
             await ethers.provider.send('evm_mine');
             expect(await cp_referrals.isSubscribed(user2.address)).to.equal(false);
         });
