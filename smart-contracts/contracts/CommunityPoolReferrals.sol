@@ -160,10 +160,14 @@ contract CommunityPoolReferrals is Ownable {
         address payer
     ) public {
         if (payer == address(0)) {
+            require(
+                contributor == msg.sender || msg.sender == owner(),
+                "CommunityPoolReferrals: contributor must be msg.sender"
+            );
             _transferTokens(contributor);
         } else {
             require(
-                payer == msg.sender || payer == owner(),
+                payer == msg.sender || msg.sender == owner(),
                 "CommunityPoolReferrals: payer must be msg.sender or Founders DAO (owner)"
             );
             _transferTokens(payer);

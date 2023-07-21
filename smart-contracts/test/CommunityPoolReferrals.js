@@ -182,7 +182,7 @@ describe("CP Referrals contract", function () {
 
             await expect(await cp_referrals.distribute())
                 .to.emit(cp_referrals, "Distribute")
-                .withArgs(owner.address, '125000' + e18, '123')
+                .withArgs(owner.address, '6250' + e18, '60')
             expect(await token.balanceOf(owner.address)).to.equal(9997546875 + e17)
             expect(await token.balanceOf(user1.address)).to.equal(15625 + e17)
         });
