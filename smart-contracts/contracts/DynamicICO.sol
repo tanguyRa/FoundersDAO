@@ -47,11 +47,15 @@ contract DynamicICO is Ownable {
         initialized = true;
 
         initialValuation = 1 * (10 ** uint256(tokenDecimals - 2));
-        firstContributorsAllocation = 548583800;
+        firstContributorsAllocation = FMaths.mul(
+            548583800,
+            1,
+            0,
+            0,
+            tokenDecimals
+        );
         token.transfer(_firstContributors, firstContributorsAllocation);
-        amountSold =
-            firstContributorsAllocation *
-            (10 ** uint256(tokenDecimals));
+        amountSold = firstContributorsAllocation;
     }
 
     event Purchase(
