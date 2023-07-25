@@ -211,12 +211,27 @@ describe("CP Referrals contract", function () {
             expect(await cp_referrals.isSubscribed(user2.address)).to.equal(false);
         });
 
+        it('Should not allow price update without queue', async function () {
+            const {
+                token, cp_referrals,
+                owner, dao_wallet, cp_ambassadors, cp_contributors, liquiditypool,
+                dynamic_ico, team, user1, user2,
+            } = await loadFixture(deploytokenFixture);
+            // change price
+            await expect(cp_referrals.setSubscriptionPrice(10000 + e18)).to.be.revertedWith(
+                'CommunityPoolReferrals: subscription price must be greater than 0 and must be the queued price')
+        });
+
         it('Should be able to change subscription price over time (admin)', async function () {
             const {
                 token, cp_referrals,
                 owner, dao_wallet, cp_ambassadors, cp_contributors, liquiditypool,
                 dynamic_ico, team, user1, user2,
             } = await loadFixture(deploytokenFixture);
+            // queue new price
+            await cp_referrals.connect(owner).queueSubscriptionPrice(10000 + e18)
+            // await 7 days
+            await ethers.provider.send('evm_increaseTime', [7 * 24 * 60 * 60]);
             // change price
             await cp_referrals.setSubscriptionPrice(10000 + e18)
             // allowance

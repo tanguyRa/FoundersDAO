@@ -36,8 +36,12 @@ contract CommunityPoolReferrals is Ownable {
     mapping(uint256 => address) public contributorWallets;
     mapping(uint256 => uint256) public subscriptions;
     mapping(uint256 => uint256) public patrons;
-    uint256 public subscriptionPrice;
     uint256 public totalPatrons;
+
+    uint256 public subscriptionPrice;
+    uint256 public lockedSubscriptionPrice;
+    uint256 public subscriptionPriceUnlockDate;
+    uint256 public constant subscriptionPriceLockPeriod = 7 * 1 days;
 
     bool private initialized;
 
@@ -136,9 +140,41 @@ contract CommunityPoolReferrals is Ownable {
     );
     event SubscriptionPriceUpdated(uint256 newPrice, uint256 oldPrice);
 
+    // time locked subscription price management
+    event NewSubscriptionPriceLocked(uint256 price, uint256 unlockDate);
+    event SubscriptionPriceUnlocked(uint256 price);
+    event SubscriptionPriceUpdateCanceled();
+
+    function queueSubscriptionPrice(uint256 newPrice) public onlyOwner {
+        require(
+            subscriptionPriceUnlockDate <= block.timestamp,
+            "CommunityPoolReferrals: subscription price is locked"
+        );
+        subscriptionPriceUnlockDate =
+            block.timestamp +
+            subscriptionPriceLockPeriod;
+        lockedSubscriptionPrice = newPrice;
+        emit NewSubscriptionPriceLocked(newPrice, subscriptionPriceUnlockDate);
+    }
+
     function setSubscriptionPrice(uint256 newPrice) public onlyOwner {
+        require(
+            subscriptionPriceUnlockDate <= block.timestamp,
+            "CommunityPoolReferrals: subscription price is locked"
+        );
+        require(
+            newPrice > 0 && newPrice == lockedSubscriptionPrice,
+            "CommunityPoolReferrals: subscription price must be greater than 0 and must be the queued price"
+        );
         emit SubscriptionPriceUpdated(newPrice, subscriptionPrice);
         subscriptionPrice = newPrice;
+        lockedSubscriptionPrice = 0;
+    }
+
+    function cancelSubscriptionPriceUpdate() public onlyOwner {
+        emit SubscriptionPriceUpdateCanceled();
+        lockedSubscriptionPrice = 0;
+        subscriptionPriceUnlockDate = 0;
     }
 
     function isSubscribed(
